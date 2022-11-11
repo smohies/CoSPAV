@@ -1,6 +1,7 @@
 import os
 import csv
 import subprocess
+import platform
 
 def validate_file(filename, description):
     while True:
@@ -10,6 +11,15 @@ def validate_file(filename, description):
         else:
             break
     return filename
+
+def ping(host):
+    param = "-n" if platform.system().lower() == "windows" else "-c"
+    command = ["ping", param, "1", host]
+    ping_result = subprocess.run(command)
+    if ping_result.returncode == 0:
+        return "Good Ping!"
+    else:
+        return "Bad Ping!"
 
 def main():
 
