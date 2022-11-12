@@ -13,7 +13,6 @@ def validate_file(filename, description):
             break
     return filename
 
-# Get ping times in config file?
 def ping(host):
     param = "-n" if platform.system().lower() == "windows" else "-c"
     ping_times = "1"
@@ -27,10 +26,10 @@ def ping(host):
 
 def main():
 
-    epn_iapise_inv_csv = validate_file("1.csv", "EPN IAPISE Inventory")
-    rvtools_csv = validate_file("2.csv", "RVTools")
+    inv_csv = validate_file("inv.csv", "EPN IAPISE Inventory")
+    rvtools_csv = validate_file("rvtools.csv", "RVTools")
   
-    print(f"Files {epn_iapise_inv_csv} and {rvtools_csv} found!")
+    print(f"Files {inv_csv} and {rvtools_csv} found!")
     # Test
     print(ping("www.google.com"))
     print(ping("www.amazon.com"))
