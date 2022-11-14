@@ -33,7 +33,7 @@ def main():
     print(f"Files {inv_csv_filename} and {rvtools_csv_filename} found!")
     print(f"Loading data from {inv_csv_filename}")
     
-    servers_ip = {}
+    server_ips = {}
     server_names = {}
     # will point to config
     inv_csv_header = 1
@@ -50,7 +50,7 @@ def main():
             next(inv_csv)
             line_count += 1
         for row in inv_csv:
-            servers_ip[row[inv_csv_ip_col].replace("Â", "").strip()] = [row[inv_csv_name_col].replace("Â", "").strip(), "", False, row[inv_csv_hostname_col].replace("Â", "").strip(), "", False, row[inv_csv_os_col].replace("Â", "").strip(), "", False]
+            server_ips[row[inv_csv_ip_col].replace("Â", "").strip()] = [row[inv_csv_name_col].replace("Â", "").strip(), "", False, row[inv_csv_hostname_col].replace("Â", "").strip(), "", False, row[inv_csv_os_col].replace("Â", "").strip(), "", False]
             if row[inv_csv_name_col]:
                 server_names[row[inv_csv_name_col].replace("Â", "").strip()] = [row[inv_csv_ip_col].replace("Â", "").strip(), "", False]
                 
@@ -60,25 +60,53 @@ def main():
     with open(rvtools_csv_filename, "r") as rvtools_csv_file:
         rvtools_csv = csv.DictReader(rvtools_csv_file)
         for row in rvtools_csv:
-            if row["Primary IP Address"] in servers_ip:
-                servers_ip[row["Primary IP Address"]][1] = row["VM"]
-                servers_ip[row["Primary IP Address"]][4] = row["DNS Name"]
+            if row["Primary IP Address"] in server_ips:
+                server_ips[row["Primary IP Address"]][1] = row["VM"]
+                server_ips[row["Primary IP Address"]][4] = row["DNS Name"]
                 if row["OS according to the VMware Tools"]:
-                    servers_ip[row["Primary IP Address"]][7] = row["OS according to the VMware Tools"]
+                    server_ips[row["Primary IP Address"]][7] = row["OS according to the VMware Tools"]
                 else:
-                    servers_ip[row["Primary IP Address"]][7] = row["OS according to the configuration file"]
+                    server_ips[row["Primary IP Address"]][7] = row["OS according to the configuration file"]
             if row["VM"] in server_names:
                 server_names[row["VM"]][1] = row["Primary IP Address"]
                     
-    print(f"Loaded {len(servers_ip)} entries for server_ip and {len(server_names)} entries for server_names")
+    print(f"Loaded {len(server_ips)} entries for server_ips and {len(server_names)} entries for server_names")
     print("Searching for discrepancies")
     
+    # Find discrepancies in server_ips
+    for key in server_ips:
+        if server_ips[key][0] != server_ips[key][1]:
+            server_ips[key][2] = True
+        if server_ips[key][3] != server_ips[key][4]:
+            server_ips[key][5] = True
+        if server_ips[key][6] != server_ips[key][7]:
+            server_ips[key][8] = True
     
-    
-    for key in servers_ip:
-        print(f"{key} : {servers_ip[key]}")
+    # Find discrepancies in server_names
     for key in server_names:
-        print(f"{key} : {server_names[key]}")
+        if server_names[key][0] != server_names[key][1]:
+            server_names[key][2] = True
+    
+    # List discrepancies in server_ips
+    server_ips_diffs = ["IP (INV), INV NAME, RVT NAME, INV HOSTNAME, RVT HOSTNAME, INV OS, RVT OS"]
+    for key in server_ips:
+        if server_ips[key][2] == True or server_ips[key][5] == True or server_ips[key][8] == True:
+            server_ips_diffs.append(f"{key}, {server_ips[key][0]}, {server_ips[key][1]}, {server_ips[key][3]}, {server_ips[key][4]}, {server_ips[key][6]}, {server_ips[key][7]}")
+    
+    # List discrepancies in server_names
+    server_names_diffs = ["NAME (INV), INV IP, RVT IP"]
+    for key in server_names:
+        if server_names[key][2] == True:
+            server_names_diffs.append(f"{key}, {server_names[key][0]}, {server_names[key][1]}")
+            
+    print(f"Found discrepancies in {len(server_ips_diffs)}/{len(server_ips)} entries from server_ips")
+    print(f"Found discrepancies in {len(server_names_diffs)}/{len(server_names)} entries from server_names")
+    
+    
+    """for x in server_ips_diffs:
+        print(x)
+    for x in server_names_diffs:
+        print(x)"""
     
 if __name__ == "__main__":
     main()
