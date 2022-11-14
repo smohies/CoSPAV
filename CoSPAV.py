@@ -24,6 +24,9 @@ def ping(host):
         return f"{result.group(1)} @ {result.group(2)}"
     else:
         return "FAIL"
+    
+def import_inv_csv_data():
+    pass
 
 def main():
 
@@ -34,6 +37,7 @@ def main():
     print(f"Loading data from {inv_csv_filename}")
     
     servers_ip = {}
+    server_names = {}
     # will point to config
     inv_csv_header = 1
     inv_csv_ip_col = 0
@@ -48,9 +52,13 @@ def main():
             next(inv_csv)
             line_count += 1
         for row in inv_csv:
-            servers_ip[row[inv_csv_ip_col].replace("Â", "").strip()] = [row[inv_csv_name_col].strip(), "", False, row[inv_csv_hostname_col].strip(), "", False, row[inv_csv_os_col].strip(), "", False]
+            servers_ip[row[inv_csv_ip_col].replace("Â", "").strip()] = [row[inv_csv_name_col].replace("Â", "").strip(), "", False, row[inv_csv_hostname_col].replace("Â", "").strip(), "", False, row[inv_csv_os_col].replace("Â", "").strip(), "", False]
+            if row[inv_csv_name_col]:
+                server_names[row[inv_csv_name_col].replace("Â", "").strip()] = [row[inv_csv_ip_col].replace("Â", "").strip(), "", False]
         for key in servers_ip:
             print(f"{key} : {servers_ip[key]}")
+        for key in server_names:
+            print(f"{key} : {server_names[key]}")
     
 if __name__ == "__main__":
     main()
