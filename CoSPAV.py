@@ -24,6 +24,12 @@ def ping(host):
         return f"{result.group(1)} @ {result.group(2)}"
     else:
         return "FAIL"
+    
+def write_csv(filename, diff_list):
+    with open(filename, "w") as csv_file:
+        writer = csv.writer(csv_file, delimiter=',', quotechar='"', lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
+        for row in diff_list:
+            writer.writerow(row)
 
 def main():
 
@@ -87,26 +93,53 @@ def main():
         if server_names[key][0] != server_names[key][1]:
             server_names[key][2] = True
     
-    # List discrepancies in server_ips
-    server_ips_diffs = ["IP (INV), INV NAME, RVT NAME, INV HOSTNAME, RVT HOSTNAME, INV OS, RVT OS"]
+    # List discrepancies in names
+    name_diffs = [["IP (INV)", "INV NAME", "RVT NAME"]]
     for key in server_ips:
-        if server_ips[key][2] == True or server_ips[key][5] == True or server_ips[key][8] == True:
-            server_ips_diffs.append(f"{key}, {server_ips[key][0]}, {server_ips[key][1]}, {server_ips[key][3]}, {server_ips[key][4]}, {server_ips[key][6]}, {server_ips[key][7]}")
+        if server_ips[key][2] == True:
+            name_diffs.append([key, server_ips[key][0], server_ips[key][1]])
+            
+    # List discrepancies in hostnames
+    hostname_diffs = [["IP (INV)", "INV HOSTNAME", "RVT HOSTNAME"]]
+    for key in server_ips:
+        if server_ips[key][5] == True:
+            hostname_diffs.append([key, server_ips[key][3], server_ips[key][4]])
+            
+    # List discrepancies in os
+    os_diffs = [["IP (INV)", "INV OS", "RVT OS"]]
+    for key in server_ips:
+        if server_ips[key][8] == True:
+            os_diffs.append([key, server_ips[key][6], server_ips[key][7]])
     
-    # List discrepancies in server_names
-    server_names_diffs = ["NAME (INV), INV IP, RVT IP"]
+    # List discrepancies in ips
+    ip_diffs = [["NAME (INV)", "INV IP", "RVT IP"]]
     for key in server_names:
         if server_names[key][2] == True:
-            server_names_diffs.append(f"{key}, {server_names[key][0]}, {server_names[key][1]}")
+            ip_diffs.append([key, server_names[key][0], server_names[key][1]])
             
-    print(f"Found discrepancies in {len(server_ips_diffs)}/{len(server_ips)} entries from server_ips")
-    print(f"Found discrepancies in {len(server_names_diffs)}/{len(server_names)} entries from server_names")
+    print(f"Found server name discrepancies in {len(name_diffs)}/{len(server_ips)} entries from server_ips")
+    print(f"Found server hostname discrepancies in {len(hostname_diffs)}/{len(server_ips)} entries from server_ips")
+    print(f"Found server OS discrepancies in {len(os_diffs)}/{len(server_ips)} entries from server_ips")
+    print(f"Found server IP discrepancies in {len(ip_diffs)}/{len(server_names)} entries from server_names")
+    print("Exporting findings to name.csv, hostname.csv, os.csv and ip.csv")
     
+    write_csv("name.csv", name_diffs)
+    write_csv("hostname.csv", hostname_diffs)
+    write_csv("os.csv", os_diffs)
+    write_csv("ip.csv", ip_diffs)
     
-    """for x in server_ips_diffs:
+    print("SERVER NAMES\n----------")
+    for x in name_diffs:
         print(x)
-    for x in server_names_diffs:
-        print(x)"""
+    print("----------\nSERVER HOSTNAMES\n----------")
+    for x in hostname_diffs:
+        print(x)
+    print("----------\nSERVER OS\n----------")
+    for x in os_diffs:
+        print(x)
+    print("----------\nSERVER IP\n----------")
+    for x in ip_diffs:
+        print(x)
     
 if __name__ == "__main__":
     main()
