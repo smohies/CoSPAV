@@ -1,4 +1,5 @@
 import os
+import os.path
 import re
 import csv
 import subprocess
@@ -28,7 +29,11 @@ def ping(host):
         return "FAIL"
     
 def write_csv(filename, diff_list):
-    with open(filename, "w") as csv_file:
+    folder = "./output/"
+    filepath = os.path.join(folder, filename)
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
+    with open(filepath, "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',', quotechar='"', lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
         for row in diff_list:
             writer.writerow(row)
@@ -39,7 +44,7 @@ def main():
     rvtools_csv_filename = validate_file(config.get("DEFAULT", "RVToolsFile"), "RVTools")
   
     print(f"Files {inv_csv_filename} and {rvtools_csv_filename} found!")
-    print(f"Loading data from {inv_csv_filename}")
+    print(f"Loading {inv_csv_filename} data")
     
     server_ips = {}
     server_names = {}
@@ -61,7 +66,7 @@ def main():
             if row[inv_csv_name_col]:
                 server_names[row[inv_csv_name_col].replace("Â", "").strip()] = [row[inv_csv_ip_col].replace("Â", "").strip(), "", False]
                 
-    print(f"Loading data from {rvtools_csv_filename}")
+    print(f"Loading {rvtools_csv_filename} data")
     
     # Import tool csv data
     with open(rvtools_csv_filename, "r") as rvtools_csv_file:
@@ -118,12 +123,11 @@ def main():
         if server_names[key][2] == True:
             ip_diffs.append([key, server_names[key][0], server_names[key][1]])
             
-    print(f"Found server name discrepancies in {len(name_diffs)}/{len(server_ips)} entries from server_ips")
-    print(f"Found server hostname discrepancies in {len(hostname_diffs)}/{len(server_ips)} entries from server_ips")
-    print(f"Found server OS discrepancies in {len(os_diffs)}/{len(server_ips)} entries from server_ips")
-    print(f"Found server IP discrepancies in {len(ip_diffs)}/{len(server_names)} entries from server_names")
-    print("Exporting findings to name.csv, hostname.csv, os.csv and ip.csv")
-    
+    print(f"{len(name_diffs)}/{len(server_ips)} server name mismatches")
+    print(f"{len(hostname_diffs)}/{len(server_ips)} server hostname mismatches")
+    print(f"{len(os_diffs)}/{len(server_ips)} server OS mismatches")
+    print(f"{len(ip_diffs)}/{len(server_names)} server IP mismatches")
+    print("Exporting mismatched data to ./output/")
     write_csv("name.csv", name_diffs)
     write_csv("hostname.csv", hostname_diffs)
     write_csv("os.csv", os_diffs)
