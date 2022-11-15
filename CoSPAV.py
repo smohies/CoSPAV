@@ -94,7 +94,7 @@ def main():
     print("Searching for discrepancies")
     
     # Find discrepancies in server_ips
-    if config.getboolean("DEFAULT", "EmptyCountsAsDiscrepancy") == True:
+    if config.getboolean("DEFAULT", "EmptyCountsAsDiscrepancy"):
         for key in server_ips:
             if server_ips[key][0] != server_ips[key][1]:
                 server_ips[key][2] = True
@@ -112,7 +112,7 @@ def main():
                 server_ips[key][8] = True
     
     # Find discrepancies in server_names
-    if config.getboolean("DEFAULT", "EmptyCountsAsDiscrepancy") == True:
+    if config.getboolean("DEFAULT", "EmptyCountsAsDiscrepancy"):
         for key in server_names:
             if server_names[key][0] != server_names[key][1]:
                 server_names[key][2] = True
@@ -174,20 +174,22 @@ def main():
     hostname_dataset = list(hostname_dataset)
     hostname_dataset.sort()
     
-    print("Pinging IP dataset")
-    
-    ip_pinged = [["IP", "PING"]]
-    for ip in ip_dataset:
-        if ip:
-            result = ping(ip)
-            print(ip, result)
-            if config.getboolean("DEFAULT", "OnlyShowFailedPings") == True:
-                if result == "FAIL":
+    if config.getboolean("DEFAULT", "PingServers"):
+        print("Pinging IP dataset")
+        ip_pinged = [["IP", "PING"]]
+        for ip in ip_dataset:
+            if ip:
+                result = ping(ip)
+                print(ip, result)
+                if config.getboolean("DEFAULT", "OnlyShowFailedPings") == True:
+                    if result == "FAIL":
+                        ip_pinged.append([ip, result])
+                else:
                     ip_pinged.append([ip, result])
-            else:
-                ip_pinged.append([ip, result])
-    print("Exporting ping results to pings.csv")
-    write_csv("pings.csv", ip_pinged) 
+        print("Exporting ping results to pings.csv")
+        write_csv("pings.csv", ip_pinged) 
+    else:
+        print("Skipping server pinging (PingServers = False)")
     print("Tasks completed. See ./output/ for exported data")
 
 if __name__ == "__main__":
