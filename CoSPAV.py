@@ -3,6 +3,9 @@ import re
 import csv
 import subprocess
 import platform
+from configparser import ConfigParser
+
+config = ConfigParser()
 
 def validate_file(filename, description):
     while True:
@@ -15,8 +18,7 @@ def validate_file(filename, description):
 
 def ping(host):
     param = "-n" if platform.system().lower() == "windows" else "-c"
-    # will point to config
-    ping_times = "1"
+    ping_times = config.getint("DEFAULT", "PingTimes")
     command = ["ping", param, ping_times, host]
     ping_result = subprocess.run(command, capture_output=True)
     if ping_result.returncode == 0:
@@ -41,12 +43,11 @@ def main():
     
     server_ips = {}
     server_names = {}
-    # will point to config
-    inv_csv_header = 1
-    inv_csv_ip_col = 0
-    inv_csv_name_col = 1
-    inv_csv_hostname_col = 2
-    inv_csv_os_col = 3
+    inv_csv_header = config.getint("Default", "InvCSVHeader")
+    inv_csv_ip_col = config.getint("Default", "InvCSVIPCol")
+    inv_csv_name_col = config.getint("Default", "InvCSVNameCol")
+    inv_csv_hostname_col = config.getint("Default", "InvCSVHostnameCol")
+    inv_csv_os_col = config.getint("Default", "InvCSVOSCol")
     
     # Import inv csv data
     with open(inv_csv_filename, "r") as inv_csv_file:
@@ -127,19 +128,6 @@ def main():
     write_csv("hostname.csv", hostname_diffs)
     write_csv("os.csv", os_diffs)
     write_csv("ip.csv", ip_diffs)
-    
-    print("SERVER NAMES\n----------")
-    for x in name_diffs:
-        print(x)
-    print("----------\nSERVER HOSTNAMES\n----------")
-    for x in hostname_diffs:
-        print(x)
-    print("----------\nSERVER OS\n----------")
-    for x in os_diffs:
-        print(x)
-    print("----------\nSERVER IP\n----------")
-    for x in ip_diffs:
-        print(x)
     
 if __name__ == "__main__":
     main()
