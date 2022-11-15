@@ -34,20 +34,20 @@ def write_csv(filename, diff_list):
             writer.writerow(row)
 
 def main():
-
-    inv_csv_filename = validate_file("inv.csv", "EPN IAPISE Inventory")
-    rvtools_csv_filename = validate_file("rvtools.csv", "RVTools")
+    config.read("config.ini")
+    inv_csv_filename = validate_file(config.get("DEFAULT", "InvFile"), "EPN IAPISE Inventory")
+    rvtools_csv_filename = validate_file(config.get("DEFAULT", "RVToolsFile"), "RVTools")
   
     print(f"Files {inv_csv_filename} and {rvtools_csv_filename} found!")
     print(f"Loading data from {inv_csv_filename}")
     
     server_ips = {}
     server_names = {}
-    inv_csv_header = config.getint("Default", "InvCSVHeader")
-    inv_csv_ip_col = config.getint("Default", "InvCSVIPCol")
-    inv_csv_name_col = config.getint("Default", "InvCSVNameCol")
-    inv_csv_hostname_col = config.getint("Default", "InvCSVHostnameCol")
-    inv_csv_os_col = config.getint("Default", "InvCSVOSCol")
+    inv_csv_header = config.getint("DEFAULT", "InvCSVHeader")
+    inv_csv_ip_col = config.getint("DEFAULT", "InvCSVIPCol")
+    inv_csv_name_col = config.getint("DEFAULT", "InvCSVNameCol")
+    inv_csv_hostname_col = config.getint("DEFAULT", "InvCSVHostnameCol")
+    inv_csv_os_col = config.getint("DEFAULT", "InvCSVOSCol")
     
     # Import inv csv data
     with open(inv_csv_filename, "r") as inv_csv_file:
