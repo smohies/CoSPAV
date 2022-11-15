@@ -90,18 +90,32 @@ def main():
     print("Searching for discrepancies")
     
     # Find discrepancies in server_ips
-    for key in server_ips:
-        if server_ips[key][0] != server_ips[key][1]:
-            server_ips[key][2] = True
-        if server_ips[key][3] != server_ips[key][4]:
-            server_ips[key][5] = True
-        if server_ips[key][6] != server_ips[key][7]:
-            server_ips[key][8] = True
+    if config.getboolean("DEFAULT", "EmptyCountsAsDiscrepancy") == True:
+        for key in server_ips:
+            if server_ips[key][0] != server_ips[key][1]:
+                server_ips[key][2] = True
+            if server_ips[key][3] != server_ips[key][4]:
+                server_ips[key][5] = True
+            if server_ips[key][6] != server_ips[key][7]:
+                server_ips[key][8] = True
+    else:
+        for key in server_ips:
+            if server_ips[key][0] != server_ips[key][1] and server_ips[key][0] and server_ips[key][1]:
+                server_ips[key][2] = True
+            if server_ips[key][3] != server_ips[key][4] and server_ips[key][3] and server_ips[key][4]:
+                server_ips[key][5] = True
+            if server_ips[key][6] != server_ips[key][7] and server_ips[key][6] and server_ips[key][7]:
+                server_ips[key][8] = True
     
     # Find discrepancies in server_names
-    for key in server_names:
-        if server_names[key][0] != server_names[key][1]:
-            server_names[key][2] = True
+    if config.getboolean("DEFAULT", "EmptyCountsAsDiscrepancy") == True:
+        for key in server_names:
+            if server_names[key][0] != server_names[key][1]:
+                server_names[key][2] = True
+    else:
+        for key in server_names:
+            if server_names[key][0] != server_names[key][1] and server_names[key][0] and server_names[key][1]:
+                server_names[key][2] = True
     
     # List discrepancies in names
     name_diffs = [["IP (INV)", "INV NAME", "RVT NAME"]]
@@ -131,7 +145,7 @@ def main():
     print(f"{len(hostname_diffs)}/{len(server_ips)} server hostname mismatches")
     print(f"{len(os_diffs)}/{len(server_ips)} server OS mismatches")
     print(f"{len(ip_diffs)}/{len(server_names)} server IP mismatches")
-    print("Exporting mismatched data to ./output/")
+    print("Exporting mismatched data (name.csv, hostname.csv, os.csv, ip.csv)")
     write_csv("name.csv", name_diffs)
     write_csv("hostname.csv", hostname_diffs)
     write_csv("os.csv", os_diffs)
@@ -156,13 +170,21 @@ def main():
     hostname_dataset = list(hostname_dataset)
     hostname_dataset.sort()
     
+    print("Pinging IP dataset")
+    
     ip_pinged = [["IP", "PING"]]
     for ip in ip_dataset:
         if ip:
             result = ping(ip)
             print(ip, result)
-            ip_pinged.append([ip, result])
-    write_csv("pings.csv", ip_pinged)
+            if config.getboolean("DEFAULT", "OnlyShowFailedPings") == True:
+                if result == "FAIL":
+                    ip_pinged.append([ip, result])
+            else:
+                ip_pinged.append([ip, result])
+    print("Exporting ping results to pings.csv")
+    write_csv("pings.csv", ip_pinged) 
+    print("Tasks completed. See ./output/ for exported data")
 
 if __name__ == "__main__":
     main()
