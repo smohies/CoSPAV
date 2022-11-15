@@ -19,12 +19,16 @@ def validate_file(filename, description):
 
 def ping(host):
     param = "-n" if platform.system().lower() == "windows" else "-c"
-    ping_times = config.getint("DEFAULT", "PingTimes")
+    ping_times = config.get("DEFAULT", "PingTimes")
     command = ["ping", param, ping_times, host]
     ping_result = subprocess.run(command, capture_output=True)
     if ping_result.returncode == 0:
-        result = re.search(r".*\((\d*% loss)\).*Average = (\d*ms).*", str(ping_result.stdout))
-        return f"{result.group(1)} @ {result.group(2)}"
+        try:
+            result = re.search(r".*\((\d*% loss)\).*Average = (\d*ms).*", str(ping_result.stdout))
+            return f"{result.group(1)} @ {result.group(2)}"
+        except:
+            result = re.search(r".*(Reply from [0-9.]*:[a-zA-Z 0-9]*.).*",str(ping_result.stdout))
+            return result.group(1)
     else:
         return "FAIL"
     
@@ -132,6 +136,33 @@ def main():
     write_csv("hostname.csv", hostname_diffs)
     write_csv("os.csv", os_diffs)
     write_csv("ip.csv", ip_diffs)
+    print("Creating servers IP dataset")
     
+    ip_dataset = set()
+    for key in server_ips:
+        ip_dataset.add(key)
+    for key in server_names:
+        ip_dataset.add(server_names[key][0])
+        ip_dataset.add(server_names[key][1])
+    ip_dataset = list(ip_dataset)
+    ip_dataset.sort()
+    
+    hostname_dataset = set()
+    for key in server_names:
+        hostname_dataset.add(key)
+    for key in server_ips:
+        hostname_dataset.add(server_ips[key][3])
+        hostname_dataset.add(server_ips[key][4])
+    hostname_dataset = list(hostname_dataset)
+    hostname_dataset.sort()
+    
+    ip_pinged = [["IP", "PING"]]
+    for ip in ip_dataset:
+        if ip:
+            result = ping(ip)
+            print(ip, result)
+            ip_pinged.append([ip, result])
+    write_csv("pings.csv", ip_pinged)
+
 if __name__ == "__main__":
     main()
