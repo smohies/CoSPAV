@@ -1,0 +1,2 @@
+Drop inv.csv and rvtools.csv in this folder.
+More info @ README.txt

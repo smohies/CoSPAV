@@ -9,13 +9,17 @@ from configparser import ConfigParser
 config = ConfigParser()
 
 def validate_file(filename, description):
+    folder = "./input/"
+    filepath = os.path.join(folder, filename)
     while True:
-        if not os.path.isfile(filename):
-            print(f"{filename} not found, input the {description} CSV filename:")
+        if not os.path.isdir(folder):
+            os.mkdir(folder)
+        if not os.path.isfile(filepath):
+            print(f"{filename} not found in ./input/, enter the {description} CSV filename:")
             filename = input()
         else:
             break
-    return filename
+    return filepath
 
 def ping(host):
     param = "-n" if platform.system().lower() == "windows" else "-c"
