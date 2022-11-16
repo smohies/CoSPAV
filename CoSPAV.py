@@ -91,11 +91,11 @@ def main():
             if row["VM"] in server_names:
                 server_names[row["VM"]][1] = row["Primary IP Address"]
             if row["Primary IP Address"] in server_ips or row["VM"] in server_names:
-                rvtools_summary.append([row["Primary IP Address"], row["VM"], row["DNS Name"], row["OS according to the VMware Tools"], row["OS according to the configuration file"]])
+                rvtools_summary.append([row["Primary IP Address"], row["VM"], row["DNS Name"], row["OS according to the VMware Tools"], row["OS according to the configuration file"], row["Powerstate"], row["Heartbeat"]])
     if config.getboolean("DEFAULT", "CreateRVToolsSummary"):
         print("Exporting rvtools-summary.csv")
         rvtools_summary = sorted(rvtools_summary, key=lambda x: x[0])
-        rvtools_summary.insert(0, ["IP", "VM Name", "DNS Name", "OS according VMWare", "OS according config"])
+        rvtools_summary.insert(0, ["IP", "VM Name", "DNS Name", "OS according VMWare", "OS according config", "Powerstate", "Heartbeat"])
         write_csv("rvtools-summary.csv", rvtools_summary)
                     
     print(f"Loaded {len(server_ips)} entries for server_ips and {len(server_names)} entries for server_names")
@@ -198,7 +198,7 @@ def main():
         write_csv("pings.csv", ip_pinged) 
     else:
         print("Skipping server pinging (PingServers = False)")
-    print("Tasks completed. See ./output/ for exported data")
+    print("Tasks complete! See ./output/ for exported data")
 
 if __name__ == "__main__":
     main()
