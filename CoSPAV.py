@@ -56,6 +56,7 @@ def main():
     
     server_ips = {}
     server_names = {}
+    rvtools_summary = [["IP", "VM Name", "DNS Name", "OS according VMWare", "OS according config"]]
     inv_csv_header = config.getint("DEFAULT", "InvCSVHeader")
     inv_csv_ip_col = config.getint("DEFAULT", "InvCSVIPCol")
     inv_csv_name_col = config.getint("DEFAULT", "InvCSVNameCol")
@@ -89,6 +90,11 @@ def main():
                     server_ips[row["Primary IP Address"]][7] = row["OS according to the configuration file"]
             if row["VM"] in server_names:
                 server_names[row["VM"]][1] = row["Primary IP Address"]
+            if row["Primary IP Address"] in server_ips or row["VM"] in server_names:
+                rvtools_summary.append([row["Primary IP Address"], row["VM"], row["DNS Name"], row["OS according to the VMware Tools"], row["OS according to the configuration file"]])
+    if config.getboolean("DEFAULT", "CreateRVToolsSummary"):
+        print("Exporting rvtools-summary.csv")
+        write_csv("rvtools-summary.csv", rvtools_summary)
                     
     print(f"Loaded {len(server_ips)} entries for server_ips and {len(server_names)} entries for server_names")
     print("Searching for discrepancies")
@@ -181,7 +187,7 @@ def main():
             if ip:
                 result = ping(ip)
                 print(ip, result)
-                if config.getboolean("DEFAULT", "OnlyShowFailedPings") == True:
+                if config.getboolean("DEFAULT", "OnlyShowFailedPings"):
                     if result == "FAIL":
                         ip_pinged.append([ip, result])
                 else:
