@@ -210,7 +210,10 @@ def main():
                     rvtools_summary_failedpings.append(row)
                     failed_pings.remove(row[0])
             for ip in failed_pings:
-                rvtools_summary_failedpings.append([f"{ip} (INV NAME: {server_ips[ip][0]})"])
+                try:
+                    rvtools_summary_failedpings.append([f"{ip} (INV NAME: {server_ips[ip][0]})"])
+                except:
+                    rvtools_summary_failedpings.append([f"{ip} (NO INV NAME)"])
             write_csv("rvtoolsSummaryFailedPings.csv", rvtools_summary_failedpings)
                     
     else:
