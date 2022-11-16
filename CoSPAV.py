@@ -56,7 +56,7 @@ def main():
     
     server_ips = {}
     server_names = {}
-    rvtools_summary = [["IP", "VM Name", "DNS Name", "OS according VMWare", "OS according config"]]
+    rvtools_summary = []
     inv_csv_header = config.getint("DEFAULT", "InvCSVHeader")
     inv_csv_ip_col = config.getint("DEFAULT", "InvCSVIPCol")
     inv_csv_name_col = config.getint("DEFAULT", "InvCSVNameCol")
@@ -94,6 +94,8 @@ def main():
                 rvtools_summary.append([row["Primary IP Address"], row["VM"], row["DNS Name"], row["OS according to the VMware Tools"], row["OS according to the configuration file"]])
     if config.getboolean("DEFAULT", "CreateRVToolsSummary"):
         print("Exporting rvtools-summary.csv")
+        rvtools_summary = sorted(rvtools_summary, key=lambda x: x[0])
+        rvtools_summary.insert(0, ["IP", "VM Name", "DNS Name", "OS according VMWare", "OS according config"])
         write_csv("rvtools-summary.csv", rvtools_summary)
                     
     print(f"Loaded {len(server_ips)} entries for server_ips and {len(server_names)} entries for server_names")
