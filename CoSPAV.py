@@ -36,26 +36,36 @@ def ping(host):
     else:
         return "FAIL"
     
-def write_csv(filename, diff_list):
+def write_csv(filename, tgt_list):
     folder = "./output/"
     filepath = os.path.join(folder, filename)
     if not os.path.isdir(folder):
         os.mkdir(folder)
     with open(filepath, "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',', quotechar='"', lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
-        for row in diff_list:
+        for row in tgt_list:
             writer.writerow(row)
+            
+def write_txt(filename, tgt_list):
+    folder = "./output/"
+    filepath = os.path.join(folder, filename)
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
+    with open(filepath, "w") as dups:
+        for item in tgt_list:
+            dups.write(f"{item}\n")
 
 def main():
+    print(f"Loading config.ini")
     config.read("config.ini")
     inv_csv_filename = validate_file(config.get("DEFAULT", "InvFile"), "EPN IAPISE Inventory")
     rvtools_csv_filename = validate_file(config.get("DEFAULT", "RVToolsFile"), "RVTools")
   
     print(f"Files {inv_csv_filename} and {rvtools_csv_filename} found!")
-    print(f"Loading {inv_csv_filename} data")
     
     server_ips = {}
     server_names = {}
+    duplicates = []
     rvtools_summary = []
     inv_csv_header = config.getint("DEFAULT", "InvCSVHeader")
     inv_csv_ip_col = config.getint("DEFAULT", "InvCSVIPCol")
@@ -64,6 +74,7 @@ def main():
     inv_csv_os_col = config.getint("DEFAULT", "InvCSVOSCol")
     
     # Import inv csv data
+    print(f"Loading {inv_csv_filename} data")
     with open(inv_csv_filename, "r") as inv_csv_file:
         inv_csv = csv.reader(inv_csv_file)
         line_count = 0
@@ -71,13 +82,20 @@ def main():
             next(inv_csv)
             line_count += 1
         for row in inv_csv:
-            server_ips[row[inv_csv_ip_col].replace("Â", "").strip()] = [row[inv_csv_name_col].replace("Â", "").strip(), "", False, row[inv_csv_hostname_col].replace("Â", "").strip(), "", False, row[inv_csv_os_col].replace("Â", "").strip(), "", False]
+            replaced_row_ip = row[inv_csv_ip_col].replace("Â", "").strip()
+            if replaced_row_ip in server_ips:
+                duplicates.append(replaced_row_ip)
+            else:
+                server_ips[replaced_row_ip] = [row[inv_csv_name_col].replace("Â", "").strip(), "", False, row[inv_csv_hostname_col].replace("Â", "").strip(), "", False, row[inv_csv_os_col].replace("Â", "").strip(), "", False]
             if row[inv_csv_name_col]:
-                server_names[row[inv_csv_name_col].replace("Â", "").strip()] = [row[inv_csv_ip_col].replace("Â", "").strip(), "", False]
-                
-    print(f"Loading {rvtools_csv_filename} data")
+                replaced_row_name = row[inv_csv_name_col].replace("Â", "").strip()
+                if replaced_row_name in server_names:
+                    duplicates.append(replaced_row_name)
+                else:
+                    server_names[replaced_row_name] = [row[inv_csv_ip_col].replace("Â", "").strip(), "", False]
     
     # Import tool csv data
+    print(f"Loading {rvtools_csv_filename} data")
     with open(rvtools_csv_filename, "r") as rvtools_csv_file:
         rvtools_csv = csv.DictReader(rvtools_csv_file)
         for row in rvtools_csv:
@@ -157,11 +175,15 @@ def main():
     print(f"{len(hostname_diffs)}/{len(server_ips)} server hostname mismatches")
     print(f"{len(os_diffs)}/{len(server_ips)} server OS mismatches")
     print(f"{len(ip_diffs)}/{len(server_names)} server IP mismatches")
+    if duplicates:
+        print(f"{len(duplicates)} duplicates found in inv.csv")
     print("Exporting mismatched data (name.csv, hostname.csv, os.csv, ip.csv)")
     write_csv("name.csv", name_diffs)
     write_csv("hostname.csv", hostname_diffs)
     write_csv("os.csv", os_diffs)
     write_csv("ip.csv", ip_diffs)
+    print("Exporting duplicates.txt")
+    write_txt("duplicates.txt", sorted(duplicates))
     print("Creating servers IP dataset")
     
     ip_dataset = set()
