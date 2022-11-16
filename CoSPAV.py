@@ -96,7 +96,7 @@ def main():
         print("Exporting rvtools-summary.csv")
         rvtools_summary = sorted(rvtools_summary, key=lambda x: x[0])
         rvtools_summary.insert(0, ["IP", "VM Name", "DNS Name", "OS according VMWare", "OS according config", "Powerstate", "Heartbeat"])
-        write_csv("rvtools-summary.csv", rvtools_summary)
+        write_csv("rvtoolsSummary.csv", rvtools_summary)
                     
     print(f"Loaded {len(server_ips)} entries for server_ips and {len(server_names)} entries for server_names")
     print("Searching for discrepancies")
@@ -184,18 +184,35 @@ def main():
     
     if config.getboolean("DEFAULT", "PingServers"):
         print("Pinging IP dataset")
-        ip_pinged = [["IP", "PING"]]
+        ip_pinged = [["IP", "PING", "INV NAME"]]
         for ip in ip_dataset:
             if ip:
                 result = ping(ip)
                 print(ip, result)
                 if config.getboolean("DEFAULT", "OnlyShowFailedPings"):
                     if result == "FAIL":
-                        ip_pinged.append([ip, result])
+                        try:
+                            ip_pinged.append([ip, result, server_ips[ip][0]])
+                        except:
+                            ip_pinged.append([ip, result])
                 else:
-                    ip_pinged.append([ip, result])
+                    try:
+                        ip_pinged.append([ip, result, server_ips[ip][0]])
+                    except:
+                        ip_pinged.append([ip, result])
         print("Exporting ping results to pings.csv")
-        write_csv("pings.csv", ip_pinged) 
+        write_csv("pings.csv", ip_pinged)
+        if config.getboolean("DEFAULT", "CreateRVToolsSummary"):
+            failed_pings = [x[0] for x in ip_pinged if x[1] == "FAIL"]
+            rvtools_summary_failedpings = [rvtools_summary[0]]
+            for row in rvtools_summary:
+                if row[0] in failed_pings:
+                    rvtools_summary_failedpings.append(row)
+                    failed_pings.remove(row[0])
+            for ip in failed_pings:
+                rvtools_summary_failedpings.append([f"{ip} (INV NAME: {server_ips[ip][0]})"])
+            write_csv("rvtoolsSummaryFailedPings.csv", rvtools_summary_failedpings)
+                    
     else:
         print("Skipping server pinging (PingServers = False)")
     print("Tasks complete! See ./output/ for exported data")
