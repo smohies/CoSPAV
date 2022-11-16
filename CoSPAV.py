@@ -194,12 +194,12 @@ def main():
                         try:
                             ip_pinged.append([ip, result, server_ips[ip][0]])
                         except:
-                            ip_pinged.append([ip, result])
+                            ip_pinged.append([ip, result, "N/A"])
                 else:
                     try:
                         ip_pinged.append([ip, result, server_ips[ip][0]])
                     except:
-                        ip_pinged.append([ip, result])
+                        ip_pinged.append([ip, result, "N/A"])
         print("Exporting ping results to pings.csv")
         write_csv("pings.csv", ip_pinged)
         if config.getboolean("DEFAULT", "CreateRVToolsSummary"):
@@ -211,9 +211,9 @@ def main():
                     failed_pings.remove(row[0])
             for ip in failed_pings:
                 try:
-                    rvtools_summary_failedpings.append([f"{ip} (INV NAME: {server_ips[ip][0]})"])
+                    rvtools_summary_failedpings.append([ip, f"N/A (INV NAME: {server_ips[ip][0]})", "N/A", "N/A", "N/A", "N/A", "N/A"])
                 except:
-                    rvtools_summary_failedpings.append([f"{ip} (NO INV NAME)"])
+                    rvtools_summary_failedpings.append([ip, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"])
             write_csv("rvtoolsSummaryFailedPings.csv", rvtools_summary_failedpings)
                     
     else:
