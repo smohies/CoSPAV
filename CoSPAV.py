@@ -55,7 +55,18 @@ def write_txt(filename, tgt_list):
         for item in tgt_list:
             dups.write(f"{item}\n")
 
+def clear_output_folder():
+    files = ["duplicates.txt", "hostname.csv", "ip.csv", "name.csv", "os.csv", "pings.csv", "rvtoolsSummary.csv", "rvtoolsSummaryFailedPings.csv"]
+    folder = "./output/"
+    if os.path.isdir(folder):
+        for file in files:
+            filepath = os.path.join(folder, file)
+            if os.path.isfile(filepath):
+                print(f"Deleting old file {filepath}")
+                os.remove(filepath)
+        
 def main():
+    clear_output_folder()
     print(f"Loading config.ini")
     config.read("config.ini")
     inv_csv_filename = validate_file(config.get("DEFAULT", "InvFile"), "EPN IAPISE Inventory")
@@ -84,13 +95,15 @@ def main():
         for row in inv_csv:
             replaced_row_ip = row[inv_csv_ip_col].replace("Â", "").strip()
             if replaced_row_ip in server_ips:
-                duplicates.append(replaced_row_ip)
+                if not replaced_row_ip in duplicates:
+                    duplicates.append(replaced_row_ip)
             else:
                 server_ips[replaced_row_ip] = [row[inv_csv_name_col].replace("Â", "").strip(), "", False, row[inv_csv_hostname_col].replace("Â", "").strip(), "", False, row[inv_csv_os_col].replace("Â", "").strip(), "", False]
             if row[inv_csv_name_col]:
                 replaced_row_name = row[inv_csv_name_col].replace("Â", "").strip()
                 if replaced_row_name in server_names:
-                    duplicates.append(replaced_row_name)
+                    if not replaced_row_name in duplicates:
+                        duplicates.append(replaced_row_name)
                 else:
                     server_names[replaced_row_name] = [row[inv_csv_ip_col].replace("Â", "").strip(), "", False]
     
