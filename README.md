@@ -1,6 +1,6 @@
-ComplianceServerPingerAndValidator - CoSPAV
+Compliance Server Pinger And Validator https://github.com/smohies/CoSPAV
 
-# CoSPAV - Compliance Server Pinger and Validator
+# CoSPAV
 ## About:
 This is a very simple Windows/Linux Python 3.11.0 script that receives 2 inputs, and has multiple configurable outputs. The main purpose is to compare a internal server inventory csv file against a csv file exported by RVTools and detecting discrepancies between them as well as pinging all servers and reporting failures.
 
