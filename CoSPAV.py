@@ -10,16 +10,15 @@ config = ConfigParser()
 
 def validate_file(filename, description):
     folder = "./input/"
-    filepath = os.path.join(folder, filename)
     while True:
+        filepath = os.path.join(folder, filename)
         if not os.path.isdir(folder):
             os.mkdir(folder)
         if not os.path.isfile(filepath):
             print(f"{filename} not found in ./input/, enter the {description} CSV filename:")
             filename = input()
         else:
-            break
-    return filepath
+            return filepath
 
 def ping(host):
     param = "-n" if platform.system().lower() == "windows" else "-c"
